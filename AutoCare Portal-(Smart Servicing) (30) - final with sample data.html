@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoCare Portal – (Smart Servicing)</title>
+    <style>
+        :root { 
+            --border: 3px solid #000; 
+            --cust-bg: rgba(227, 242, 253, 0.92); 
+            --admin-bg: rgba(255, 243, 224, 0.95); 
+            --mech-bg: rgba(232, 245, 233, 0.95); 
+            --accent: #ffeb3b; 
+            --danger: #ff5252; 
+            --success: #4caf50; 
+        }
+        * { box-sizing: border-box; border-radius: 0; font-family: monospace; }
+        
+        /* BACKGROUND IMAGE LOGIC */
+        body { 
+            background-color: #333; 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #000; 
+            margin: 0; 
+            padding: 10px; 
+            border: 10px solid #000; 
+            min-height: 100vh; 
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* Default Login BG (Blue Motion Car) */
+        body.login-bg { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=1920'); }
+        /* Signup BG (Supercars) */
+        body.signup-bg { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=1920'); }
+        /* Customer BG (Cartoon Workshop) */
+        body.cust-bg { background-image: linear-gradient(rgba(255,255,255,0.3), rgba(255,255,255,0.3)), url('https://img.freepik.com/free-vector/car-service-center-garage-with-mechanics_107791-1632.jpg'); }
+        /* Admin BG (Dark Workshop) */
+        body.admin-bg { background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1486006920555-c77dcf18193b?auto=format&fit=crop&q=80&w=1920'); }
+        /* Mechanic BG (Blurred Workshop) */
+        body.mech-bg { background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=1920'); }
+
+        .box { border: var(--border); padding: 15px; margin-bottom: 15px; background: rgba(255, 255, 255, 0.92); box-shadow: 8px 8px 0px #000; }
+        .box-cust { background: var(--cust-bg); }
+        .box-admin { background: var(--admin-bg); }
+        .box-mech { background: var(--mech-bg); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        
+        input, select, textarea { border: 2px solid #000; padding: 8px; margin: 4px 0; font-size: 13px; width: 100%; background: #fff; }
+        button { background: #000; color: #fff; border: 2px solid #000; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
+        button:hover { background: var(--accent); color: #000; }
+        
+        .btn-red { background: var(--danger); color: #fff; }
+        .btn-green { background: var(--success); color: #fff; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: #fff; }
+        th { background: #000; color: #fff; }
+        th, td { border: 2px solid #000; padding: 8px; text-align: left; }
+        
+        .hidden { display: none !important; }
+        .scroll { max-height: 250px; overflow-y: auto; border: 1px solid #000; padding: 5px; margin-top: 10px; background: #fff; }
+        .summary { background: var(--accent); border: 2px dashed #000; padding: 10px; margin-top: 10px; font-weight: bold; }
+        
+        .nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #000; padding-bottom: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.95); padding: 10px; border: 3px solid #000; }
+        .badge { display: inline-block; padding: 4px 8px; background: #000; color: #fff; font-size: 11px; margin-bottom: 4px; font-weight: bold; }
+        
+        .issue-item { border: 1px solid #000; padding: 5px; margin: 3px; display: inline-block; font-size: 11px; cursor: pointer; background: #fff; transition: 0.2s; }
+        .issue-item:hover { background: var(--accent); }
+        .issue-item input { width: auto; margin-right: 5px; vertical-align: middle; }
+        
+        .app-title { text-align: center; font-size: 32px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; line-height: 1; background: #000; color: #fff; padding: 15px; border: 4px solid var(--accent); }
+        .msg-marquee { background: var(--accent); border: 2px solid #000; font-weight: bold; padding: 5px; margin-bottom: 10px; }
+
+        #invoice-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; background: #fff; border: 5px solid #000; z-index: 1000; padding: 20px; box-shadow: 20px 20px 0px rgba(0,0,0,0.5); }
+        .drive-box { border-top: 1px solid #000; margin-top: 10px; padding-top: 10px; font-size: 12px; }
+        .chk-line { display: flex; align-items: center; gap: 5px; font-size: 11px; margin: 5px 0; }
+        .chk-line input { width: auto; }
+
+        @media print {
+            body { border: none !important; padding: 0 !important; margin: 0 !important; background: #fff !important; }
+            body * { visibility: hidden; }
+            #invoice-modal, #invoice-modal * { visibility: visible; }
+            #invoice-modal { position: absolute; left: 0; top: 0; transform: none; width: 100%; border: 2px solid #000; box-shadow: none; margin: 0; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="login-bg">
+
+<div id="auth-container" style="max-width: 500px; margin: 30px auto;">
+    <div class="app-title">AutoCare Portal – (Smart Servicing)</div>
+    
+    <!-- LOGIN BOX -->
+    <div id="login-box" class="box">
+        <div class="msg-marquee">
+            <marquee>WELCOME TO LOGIN PAGE OF AutoCare Portal – (Smart Servicing)</marquee>
+        </div>
+        <h2 style="text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px;">USER LOGIN</h2>
+        <select id="l-r" onchange="document.getElementById('l-u').placeholder=(this.value==='mechanic')?'Employee ID':'Username'">
+            <option value="customer">Customer</option>
+            <option value="mechanic">Mechanic</option>
+            <option value="admin">Admin</option>
+        </select>
+        <input type="text" id="l-u" placeholder="Username">
+        <input type="text" id="l-p" placeholder="Password">
+        <button onclick="login()">Enter Portal</button>
+        <div style="margin-top:15px; display:flex; justify-content:space-between; font-size:12px; font-weight: bold;">
+            <a href="#" onclick="forgot()">Forgot Password?</a>
+            <a href="#" onclick="showAuth('signup-box')">Create New Account</a>
+        </div>
+    </div>
+
+    <!-- SIGNUP BOX -->
+    <div id="signup-box" class="box hidden">
+        <div class="msg-marquee">
+            <marquee>WELCOME TO SIGNUP PAGE OF AutoCare Portal – (Smart Servicing)</marquee>
+        </div>
+        <h2 style="text-align: center;">CUSTOMER SIGN-UP</h2>
+        <input type="text" id="s-n" placeholder="Full Name">
+        <input type="text" id="s-u" placeholder="Choose Username">
+        <input type="text" id="s-p" placeholder="Choose Password">
+        <button class="btn-green" onclick="signup()">Register Account</button>
+        <button style="margin-top:10px; background:#fff; color:#000;" onclick="showAuth('login-box')">Back to Login</button>
+    </div>
+</div>
+
+<div id="app" class="hidden">
+    <div class="nav">
+        <div><span id="role-tag" class="badge"></span> <span id="name-tag" style="margin-left:8px; font-weight:bold; font-size: 16px;"></span></div>
+        <button style="width:auto; height: 35px; background: var(--danger);" onclick="location.reload()">Logout</button>
+    </div>
+
+    <!-- CUSTOMER PANEL -->
+    <div id="customer-dash" class="hidden">
+        <div class="grid">
+            <div class="box box-cust">
+                <h3 style="background:#000; color:#fff; padding:5px;">1. MY VEHICLES</h3>
+                <input type="text" id="v-n" placeholder="Car Name"><input type="text" id="v-p" placeholder="Plate Number">
+                <button class="btn-green" onclick="addV()">Save to Garage</button>
+                <div id="v-list" class="scroll"></div>
+            </div>
+            <div id="booking-area" class="box box-cust hidden">
+                <h3 style="background:#000; color:#fff; padding:5px;">2. SERVICE FOR: <span id="sel-v-title"></span></h3>
+                <textarea id="cust-txt" oninput="updateSum()" placeholder="Describe extra issues..."></textarea>
+                <div class="scroll" id="pre-checks"></div>
+                
+                <div class="drive-box">
+                    <strong>Drive By Service:</strong>
+                    <select id="v-drive" onchange="toggleDriveInputs()">
+                        <option value="None">None (Visit Workshop)</option>
+                        <option value="Only Pickup">Only Pickup</option>
+                        <option value="Pickup and Drop">Pickup and Drop</option>
+                        <option value="Only Drop">Only Drop</option>
+                    </select>
+                    <div id="v-drive-details" class="hidden">
+                        <input type="text" id="v-pickup-addr" class="hidden" placeholder="Pickup Address" oninput="syncAddr()">
+                        <div id="v-same-line" class="chk-line hidden">
+                            <input type="checkbox" id="v-same-addr" onchange="syncAddr()"> Same as Pickup
+                        </div>
+                        <input type="text" id="v-drop-addr" class="hidden" placeholder="Drop Address">
+                        <input type="number" id="v-contact" placeholder="Contact Mobile">
+                    </div>
+                </div>
+
+                <div id="sum-box" class="summary">Summary: -</div>
+                <button onclick="book()">Submit Job Request</button>
+            </div>
+        </div>
+        <div class="box box-cust">
+            <h3 style="background:#000; color:#fff; padding:5px;">MY SERVICE HISTORY</h3>
+            <table id="c-tab"><thead><tr><th>Vehicle</th><th>Complaints</th><th>Status</th><th>Mechanic</th><th>Cost</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+
+    <!-- MECHANIC PANEL -->
+    <div id="mechanic-dash" class="hidden">
+        <div class="box box-mech">
+            <h3 style="background:#000; color:#fff; padding:5px;">MY ASSIGNED JOBS</h3>
+            <table id="m-tab"><thead><tr><th>Vehicle</th><th>Task</th><th>Add Parts Cost (₹)</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-dash" class="hidden">
+        <div class="grid">
+            <div class="box box-admin">
+                <h3 style="background:#000; color:#fff; padding:5px;">MECHANIC MANAGEMENT</h3>
+                <span class="badge" id="m-id-display" style="background:var(--success)">Emp ID: Auto</span>
+                <input type="text" id="m-n" placeholder="Name"><input type="text" id="m-des" placeholder="Designation">
+                <input type="text" id="m-p" placeholder="Password"><input type="number" id="m-s" placeholder="Salary">
+                <button class="btn-green" id="m-btn" onclick="saveM()">Register Mechanic</button>
+                <button id="m-cancel" class="hidden btn-red" style="margin-top:5px;" onclick="resetMForm()">Cancel</button>
+                <div id="m-list" class="scroll"></div>
+            </div>
+            
+            <div class="box box-admin">
+                <h3 style="background:#000; color:#fff; padding:5px;">REGISTERED CUSTOMERS</h3>
+                <div id="admin-customer-list" class="scroll" style="max-height: 380px;"></div>
+            </div>
+        </div>
+
+        <div class="box box-admin">
+            <h3 style="background:#000; color:#fff; padding:5px;">PENDING JOBS</h3>
+            <table id="a-tab"><thead><tr><th>Vehicle</th><th>Task</th><th>Assign</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div class="box box-admin">
+            <h3 style="background:#000; color:#fff; padding:5px;">ASSIGNED WORK (IN PROGRESS)</h3>
+            <table id="a-assign-tab"><thead><tr><th>Vehicle</th><th>Task</th><th>Mechanic</th><th>Status</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="box box-admin">
+            <h3 style="background:#000; color:#fff; padding:5px;">FINISHED WORK & BILLING</h3>
+            <table id="a-fin-tab"><thead><tr><th>Vehicle</th><th>Customer</th><th>Task</th><th>Cost (₹)</th><th>Payment</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+</div>
+
+<!-- INVOICE SYSTEM -->
+<div id="invoice-modal" class="hidden">
+    <div style="border-bottom: 4px solid #000; text-align:center; background:#000; color:#fff; padding:5px;"><h2>OFFICIAL INVOICE</h2></div>
+    <div id="invoice-body" style="font-size:12px; margin-top:10px; line-height:1.6; padding: 10px;"></div>
+    <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn-green" onclick="window.print()">PRINT INVOICE</button>
+        <button class="btn-red" onclick="document.getElementById('invoice-modal').classList.add('hidden')">CLOSE</button>
+    </div>
+</div>
+
+<script>
+    // PRE-LOADED SAMPLE DATA (Updated with new customers)
+    let users = JSON.parse(localStorage.getItem('ac_users')) || [
+        {u:'qwe', p:'123', role:'admin', name:'Head Admin'},
+        {u:'rahul', p:'123', role:'customer', name:'Rahul Sharma'},
+        {u:'priya', p:'123', role:'customer', name:'Priya Patel'},
+        {u:'amit', p:'123', role:'customer', name:'Amit Kumar'},
+        {u:'sneha', p:'123', role:'customer', name:'Sneha Rao'},
+        {u:'vikram', p:'123', role:'customer', name:'Vikram Singh'},
+        {u:'ashish', p:'123', role:'customer', name:'Ashish Ahire'},
+        {u:'durgesh', p:'123', role:'customer', name:'Durgesh Mohane'},
+        {u:'ujjwal', p:'123', role:'customer', name:'Ujjwal Shelar'},
+        {u:'shubhangi', p:'123', role:'customer', name:'Shubhangi Salunke'},
+        {u:'EMP1001', p:'123', role:'mechanic', name:'Suresh Mechanic'},
+        {u:'EMP1002', p:'123', role:'mechanic', name:'Ramesh Mechanic'},
+        {u:'EMP1003', p:'123', role:'mechanic', name:'Anil Mechanic'},
+        {u:'EMP1004', p:'123', role:'mechanic', name:'Sunita Mechanic'},
+        {u:'EMP1005', p:'123', role:'mechanic', name:'David Mechanic'}
+    ];
+    let mechanics = JSON.parse(localStorage.getItem('ac_mechs')) || [
+        {id:'EMP1001', name:'Suresh Mechanic', des:'Senior Tech', p:'123', sal:25000},
+        {id:'EMP1002', name:'Ramesh Mechanic', des:'Brake Expert', p:'123', sal:22000},
+        {id:'EMP1003', name:'Anil Mechanic', des:'Engine Specialist', p:'123', sal:28000},
+        {id:'EMP1004', name:'Sunita Mechanic', des:'Electrical Expert', p:'123', sal:24000},
+        {id:'EMP1005', name:'David Mechanic', des:'General Service', p:'123', sal:20000}
+    ];
+    let vehicles = JSON.parse(localStorage.getItem('ac_vehs')) || [
+        {id:'V1', owner:'rahul', n:'Maruti Swift', p:'MH-01-AX-1234'},
+        {id:'V2', owner:'priya', n:'Honda City', p:'DL-04-CB-5678'},
+        {id:'V3', owner:'amit', n:'Mahindra Thar', p:'HR-26-DJ-9999'},
+        {id:'V4', owner:'sneha', n:'Hyundai Creta', p:'KA-03-MG-4422'},
+        {id:'V5', owner:'vikram', n:'Toyota Fortuner', p:'UP-32-ZZ-0001'}
+    ];
+    let requests = JSON.parse(localStorage.getItem('ac_reqs')) || [
+        {id:'R101', vId:'V1', u:'rahul', task:'Oil Change, Brake Pad', status:'Pending', mech:'-', cost:0, payMode:'None', paid:false, drive:'None', contact:'', pickup:'', drop:''},
+        {id:'R102', vId:'V2', u:'priya', task:'Engine Tuneup [Drive: Only Pickup]', status:'Assigned', mech:'Suresh Mechanic', cost:0, payMode:'None', paid:false, drive:'Only Pickup', contact:'9876543210', pickup:'Sector 15, Mumbai', drop:''},
+        {id:'R103', vId:'V3', u:'amit', task:'Tyre Fix, Wheel Align', status:'Completed', mech:'Anil Mechanic', cost:4500, payMode:'None', paid:false, drive:'None', contact:'', pickup:'', drop:''},
+        {id:'R104', vId:'V4', u:'sneha', task:'AC Filter, General Insp', status:'Completed', mech:'Sunita Mechanic', cost:3200, payMode:'Online', paid:true, drive:'Pickup and Drop', contact:'9988776655', pickup:'Green Park', drop:'Green Park'},
+        {id:'R105', vId:'V5', u:'vikram', task:'Body Wash, Interior Clean', status:'Completed', mech:'David Mechanic', cost:1500, payMode:'Cash', paid:true, drive:'None', contact:'', pickup:'', drop:''}
+    ];
+    let session = null; let activeVId = null; let editMId = null;
+
+    const probs = ["Oil Change", "Brake Pad", "Engine Tuneup", "AC Filter", "Battery", "Tyre Fix", "Suspension", "Clutch", "Wheel Align", "Electrical", "Fuel Pump", "Coolant", "Wiper", "Lights", "Transmission", "General Insp", "Body Wash", "Interior Clean", "Radiator", "Spark Plug"];
+
+    function save() { localStorage.setItem('ac_users', JSON.stringify(users)); localStorage.setItem('ac_mechs', JSON.stringify(mechanics)); localStorage.setItem('ac_vehs', JSON.stringify(vehicles)); localStorage.setItem('ac_reqs', JSON.stringify(requests)); }
+    
+    function showAuth(id) { 
+        document.getElementById('login-box').classList.add('hidden'); 
+        document.getElementById('signup-box').classList.add('hidden'); 
+        document.getElementById(id).classList.remove('hidden'); 
+        document.body.className = (id === 'signup-box') ? 'signup-bg' : 'login-bg';
+    }
+    
+    function signup() { 
+        const n=document.getElementById('s-n').value, u=document.getElementById('s-u').value, p=document.getElementById('s-p').value; 
+        if(u&&p){ users.push({u,p,role:'customer',name:n}); save(); showAuth('login-box'); } 
+    }
+    
+    function login() {
+        const u=document.getElementById('l-u').value, p=document.getElementById('l-p').value, r=document.getElementById('l-r').value;
+        const found = users.find(x => x.u === u && x.p === p && x.role === r);
+        if(!found) return alert("Invalid Login");
+        session = found;
+        document.getElementById('auth-container').classList.add('hidden'); 
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('role-tag').innerText = session.role.toUpperCase(); 
+        document.getElementById('name-tag').innerText = session.name;
+        document.getElementById(session.role + '-dash').classList.remove('hidden');
+        
+        // Dynamic Dashboard BG
+        document.body.className = session.role + '-bg';
+
+        if(session.role==='customer') document.getElementById('pre-checks').innerHTML = probs.map(i => `<label class="issue-item"><input type="checkbox" class="ic" value="${i}" onchange="updateSum()"> ${i}</label>`).join('');
+        render();
+    }
+
+    function toggleDriveInputs() {
+        const t = document.getElementById('v-drive').value, det = document.getElementById('v-drive-details'), pick = document.getElementById('v-pickup-addr'), drop = document.getElementById('v-drop-addr'), sl = document.getElementById('v-same-line');
+        det.classList.add('hidden'); pick.classList.add('hidden'); drop.classList.add('hidden'); sl.classList.add('hidden');
+        if(t !== "None") {
+            det.classList.remove('hidden');
+            if(t === "Only Pickup" || t === "Pickup and Drop") pick.classList.remove('hidden');
+            if(t === "Only Drop" || t === "Pickup and Drop") drop.classList.remove('hidden');
+            if(t === "Pickup and Drop") sl.classList.remove('hidden');
+        }
+        updateSum();
+    }
+
+    function syncAddr() {
+        const same = document.getElementById('v-same-addr').checked, pick = document.getElementById('v-pickup-addr').value;
+        if(same) { document.getElementById('v-drop-addr').value = pick; document.getElementById('v-drop-addr').readOnly = true; } 
+        else { document.getElementById('v-drop-addr').readOnly = false; }
+        updateSum();
+    }
+
+    function forgot() { const u = prompt("User ID:"); const f = users.find(x => x.u === u); alert(f ? "Pass: "+f.p : "Not Found"); }
+    function addV() { const n=document.getElementById('v-n').value, p=document.getElementById('v-p').value; if(n&&p){ vehicles.push({id:"V"+Date.now(), owner:session.u, n, p}); save(); render(); } }
+    function selV(id) { activeVId = id; document.getElementById('booking-area').classList.remove('hidden'); document.getElementById('sel-v-title').innerText = vehicles.find(v=>v.id===id).n; resetForm(); }
+    function resetForm() { document.getElementById('cust-txt').value=''; Array.from(document.querySelectorAll('.ic')).forEach(c=>c.checked=false); document.getElementById('v-drive').value = "None"; toggleDriveInputs(); updateSum(); }
+    function updateSum() { const txt=document.getElementById('cust-txt').value, checks=Array.from(document.querySelectorAll('.ic:checked')).map(x=>x.value), dr = document.getElementById('v-drive').value; document.getElementById('sum-box').innerText = "Summary: "+(txt?txt+" + ":"")+checks.join(", ") + (dr!=="None" ? " [Drive: "+dr+"]":""); }
+    function book() { const dr = document.getElementById('v-drive').value, con = document.getElementById('v-contact').value; if(dr!=="None" && !con) return alert("Contact required."); requests.push({id:"R"+Date.now(), vId:activeVId, u:session.u, task:document.getElementById('sum-box').innerText, status:'Pending', mech:'-', cost:0, payMode:'None', paid:false, drive: dr, contact: con, pickup: document.getElementById('v-pickup-addr').value, drop: document.getElementById('v-drop-addr').value}); save(); resetForm(); render(); alert("Submitted!"); }
+
+    function saveM() {
+        const n=document.getElementById('m-n').value, p=document.getElementById('m-p').value, s=document.getElementById('m-s').value, d=document.getElementById('m-des').value; if(!n||!p) return;
+        if(editMId) { let m = mechanics.find(x=>x.id===editMId); m.name=n; m.p=p; m.sal=s; m.des=d; let u = users.find(x=>x.u===editMId); u.p=p; u.name=n; } 
+        else { let id="EMP"+Math.floor(1000+Math.random()*9000); let m={id, u:id, p, role:'mechanic', name:n, sal:s, des:d}; mechanics.push(m); users.push(m); }
+        save(); resetMForm(); render();
+    }
+    function editM(id) { editMId = id; let m = mechanics.find(x=>x.id===id); document.getElementById('m-n').value=m.name; document.getElementById('m-des').value=m.des; document.getElementById('m-p').value=m.p; document.getElementById('m-s').value=m.sal; document.getElementById('m-id-display').innerText = "Editing: "+id; document.getElementById('m-btn').innerText = "Update"; document.getElementById('m-cancel').classList.remove('hidden'); }
+    function resetMForm() { editMId=null; document.getElementById('m-n').value=''; document.getElementById('m-des').value=''; document.getElementById('m-p').value=''; document.getElementById('m-s').value=''; document.getElementById('m-id-display').innerText="Emp ID: Auto"; document.getElementById('m-btn').innerText="Register Mechanic"; document.getElementById('m-cancel').classList.add('hidden'); }
+
+    function assign(rId) { let r=requests.find(x=>x.id===rId); r.mech=document.getElementById('sel'+rId).value; r.status='Assigned'; save(); render(); }
+    function finish(rId) { let r=requests.find(x=>x.id===rId); r.cost=parseInt(document.getElementById('cost'+rId).value)||0; r.status='Completed'; save(); render(); }
+    function payBy(rId, mode) { let r=requests.find(x=>x.id===rId); r.payMode=mode; if(mode==='Online'){ r.paid=true; openInvoice(rId); } save(); render(); }
+    function formatTask(r) { let t = r.task; if(r.drive!=="None") { t += `<br><b>Drive:</b> ${r.drive} (Ph: ${r.contact})`; if(r.pickup) t += `<br><b>Pick:</b> ${r.pickup}`; if(r.drop) t += `<br><b>Drop:</b> ${r.drop}`; } return t; }
+    function openInvoice(rId) { let r=requests.find(x=>x.id===rId); let v=vehicles.find(x=>x.id===r.vId); let c=users.find(x=>x.u===r.u); document.getElementById('invoice-body').innerHTML = `<b>INV-ID:</b> ${r.id}<br><b>Date:</b> ${new Date().toLocaleDateString()}<br><hr><b>Customer:</b> ${c.name}<br><b>Vehicle:</b> ${v.n} [${v.p}]<br><b>Mechanic:</b> ${r.mech}<hr><b>Work:</b> ${r.task}<br><b>Total: ₹${r.cost}</b><br><b>Payment:</b> ${r.payMode} (${r.paid?'PAID':'PENDING'})`; document.getElementById('invoice-modal').classList.remove('hidden'); }
+
+    function render() {
+        if(!session) return;
+        if(session.role==='customer') {
+            document.getElementById('v-list').innerHTML = vehicles.filter(v=>v.owner===session.u).map(v=>`<div class="box" style="padding:8px; background:white;"><b>${v.n}</b><br><button style="width:48%;padding:2px; font-size:10px;" onclick="selV('${v.id}')">SELECT</button><button style="width:48%;padding:2px;background:var(--danger); font-size:10px;" onclick="vehicles=vehicles.filter(x=>x.id!=='${v.id}');save();render()">DEL</button></div>`).join('');
+            document.getElementById('c-tab').querySelector('tbody').innerHTML = requests.filter(r=>r.u===session.u).map(r => {
+                let v=vehicles.find(x=>x.id===r.vId); let payUI = r.status==='Completed' ? (r.paid?`${r.payMode} | <button style="width:auto;padding:2px; font-size:9px" onclick="openInvoice('${r.id}')">Print</button>` : (r.payMode!=='None'? r.payMode : `<select onchange="payBy('${r.id}', this.value)"><option>Pay By</option><option value="Cash">Cash</option><option value="Online">Online</option></select>`)) : "-";
+                return `<tr><td>${v?.n}</td><td>${formatTask(r)}</td><td>${r.status}</td><td>${r.mech}</td><td>₹${r.cost}</td><td>${payUI}</td></tr>`
+            }).join('');
+        }
+        if(session.role==='mechanic') {
+            document.getElementById('m-tab').querySelector('tbody').innerHTML = requests.filter(r=>r.mech===session.name && r.status==='Assigned').map(r => `<tr><td>${vehicles.find(x=>x.id===r.vId)?.n}</td><td>${formatTask(r)}</td><td><input type="number" id="cost${r.id}" placeholder="Cost"></td><td><button class="btn-green" onclick="finish('${r.id}')">Finish</button></td></tr>`).join('');
+        }
+        if(session.role==='admin') {
+            document.getElementById('admin-customer-list').innerHTML = users.filter(u=>u.role==='customer').map(u=>`
+                <div style="border-bottom:2px solid #000; padding:8px; margin-bottom:5px; background:#fff; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="line-height:1.4">
+                        <b style="font-size:13px; text-transform:uppercase;">${u.name}</b><br>
+                        <span style="font-size:10px; color:#555;">ID: <b>${u.u}</b> | Pass: <b>${u.p}</b></span>
+                    </div>
+                    <button class="btn-red" style="width:auto; padding:5px 10px; font-size:10px;" onclick="if(confirm('Delete customer ${u.name}?')){users=users.filter(x=>x.u!=='${u.u}');save();render()}">REMOVE</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('m-list').innerHTML = mechanics.map(m=>`<div class="box" style="padding:8px; font-size:10px; background:white;"><b>${m.name}</b> [${m.id}]<br>₹${m.sal}<br><button style="width:auto;padding:2px" onclick="editM('${m.id}')">Modify</button><button style="width:auto;padding:2px;background:var(--danger)" onclick="mechanics=mechanics.filter(x=>x.id!=='${m.id}');users=users.filter(x=>x.u!=='${m.id}');save();render()">Remove</button></div>`).join('');
+            document.getElementById('a-tab').querySelector('tbody').innerHTML = requests.filter(r=>r.status==='Pending').map(r => `<tr><td>${vehicles.find(x=>x.id===r.vId)?.n}</td><td>${formatTask(r)}</td><td><select id="sel${r.id}">${mechanics.map(m=>`<option>${m.name}</option>`)}</select><button onclick="assign('${r.id}')">ASSIGN</button></td><td><button class="btn-red" style="padding:2px" onclick="requests=requests.filter(x=>x.id!=='${r.id}');save();render()">DEL</button></td></tr>`).join('');
+            document.getElementById('a-assign-tab').querySelector('tbody').innerHTML = requests.filter(r=>r.status==='Assigned').map(r => `<tr><td>${vehicles.find(x=>x.id===r.vId)?.n}</td><td>${formatTask(r)}</td><td>${r.mech}</td><td>IN PROGRESS</td></tr>`).join('');
+            document.getElementById('a-fin-tab').querySelector('tbody').innerHTML = requests.filter(r=>r.status==='Completed').map(r => {
+                let v=vehicles.find(x=>x.id===r.vId); let c=users.find(u=>u.u===r.u);
+                let btn = r.paid ? `<button style="padding:2px; width:auto;" onclick="openInvoice('${r.id}')">Print</button>` : `<button style="width:auto;padding:2px" onclick="let reqMod = requests.find(x=>x.id==='${r.id}'); let nc = prompt('Adjust Cost:', reqMod.cost); if(nc){ reqMod.cost=parseInt(nc); save(); render(); }">Modify</button> ${r.payMode==='Cash'?`<button class="btn-green" style="padding:2px" onclick="let re=requests.find(x=>x.id==='${r.id}');re.paid=true;save();render()">Confirm Cash</button>`:''}`;
+                return `<tr><td>${v?.n}</td><td>${c?.name}</td><td>${formatTask(r)}</td><td>₹${r.cost}</td><td>${r.payMode}</td><td>${btn}</td></tr>`
+            }).join('');
+        }
+    }
+</script>
+</body>
+</html>
